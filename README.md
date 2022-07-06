@@ -1,2 +1,3 @@
-# SQL-Script-
-Desarrollos Rutinas SQL Script
+# SQL-Script ADQ-
+Rutina SQL Script ADQ
+
