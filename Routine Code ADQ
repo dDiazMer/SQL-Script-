@@ -103,12 +103,10 @@ it_file = SELECT  ADQNT_ID AS FILE_ID
 
  end for;
 
-
  tAux1 = SELECT SUBSTRING(VEND_ACC, 1, 8)  AS ZADCALDAY,
          FILE,
          DENSE_RANK( ) OVER(ORDER BY  FILE) AS ZADFILNUM
          FROM :tAuxRes;
-
 
  tAuxLin = SELECT '' AS RECORDMODE,
        REC_ID AS ZADRECID1,
