@@ -1,0 +1,58 @@
+declare contador integer;
+
+    contador = 1;
+
+    outTab1 = SELECT "/BIC/ZFEPRIVEN",
+                  "/BIC/ZCDMANGR",
+                  row_number () OVER ( PARTITION BY "/BIC/ZCDMANGR" ORDER BY "/BIC/ZFEPRIVEN" ASC) AS FECHA_ROW,
+                  RECORD,
+                  SQL__PROCEDURE__SOURCE__RECORD  FROM :inTab;
+
+
+    outTab2 = SELECT "/BIC/ZFEPRIVEN",
+                  "/BIC/ZCDMANGR",
+                  FECHA_ROW,
+                  RECORD,
+                  SQL__PROCEDURE__SOURCE__RECORD
+                  FROM :outTab1 WHERE FECHA_ROW = 1;
+
+
+    outTab3 = SELECT "/BIC/ZTITDEFIN",
+                  "/BIC/ZCDMANGR",
+                  SUM(contador) over ( partition by "/BIC/ZCDMANGR", "/BIC/ZTITDEFIN") AS SUMA_MAN
+                  FROM :inTab;
+
+
+    outTab4 = SELECT "/BIC/ZTITDEFIN",
+                 "/BIC/ZCDMANGR",
+                  rank() over(PARTITION BY "/BIC/ZCDMANGR" order by SUMA_MAN DESC) AS RANK_MAN
+                  FROM :outTab3;
+
+    outTab5 = select "/BIC/ZTITDEFIN",
+                 "/BIC/ZCDMANGR"
+                  FROM :outTab4
+                  WHERE RANK_MAN = 1;
+
+    outTab6 = select "/BIC/ZTITDEFIN",
+                 "/BIC/ZCDMANGR",
+                  LENGTH("/BIC/ZTITDEFIN") AS LEN_TITULO
+                  FROM :outTab5;
+
+    outTab7 = SELECT "/BIC/ZTITDEFIN",
+                 "/BIC/ZCDMANGR",
+                  row_number ( ) over(PARTITION BY "/BIC/ZCDMANGR" ORDER BY LEN_TITULO ASC) AS ROW_TITULO
+                  FROM :outTab6;
+
+    outTab8 = select "/BIC/ZTITDEFIN",
+                 "/BIC/ZCDMANGR"
+                  FROM :outTab7
+                  WHERE ROW_TITULO = 1;
+
+    outTab = SELECT :outTab2."/BIC/ZCDMANGR",
+                 "/BIC/ZFEPRIVEN" AS "/BIC/ZFEPRVEMA",
+                 "/BIC/ZTITDEFIN" AS "/BIC/ZTITMANGR",
+                  :outTab2.RECORD,
+                  :outTab2.SQL__PROCEDURE__SOURCE__RECORD
+                  FROM :outTab2
+                  JOIN :outTab8
+                  on :outTab2."/BIC/ZCDMANGR" = :outTab8."/BIC/ZCDMANGR";
